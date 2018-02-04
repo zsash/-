@@ -245,7 +245,7 @@ while i==39:
     
     id_mcetg=[i] # i is id
 
-    if main[1].data[i-1][50]>0 :#redshift final
+    if main[1].data[i-1][50]>0:#redshift final
         
         z_final=main[1].data[i-1][50]
         D=red2dis(z_final)
@@ -288,6 +288,7 @@ while i==39:
                 flux_candels1.append(CANDELS[1].data[index_candels][j])
                 flux_infocandels.append(CANDELS[1].data[index_candels][j])
                 flux_infocandels.append(CANDELS[1].data[index_candels][j+1])
+            print('flux_candels1',flux_candels1)
             print('flux_infocandels',flux_infocandels)
             flux_candels0=[1e-29*n for n in flux_candels1 if n>0]
             v_candels=nummatch(flux_candels1,f_candels)
@@ -322,7 +323,6 @@ while i==39:
             for j in range(3,5,1):
                 flux_tenis.append(TENIS[1].data[index_tenis][j])
                 flux_infotenis.append(TENIS[1].data[index_tenis][j])
-                flux_infotenis.append(TENIS[1].data[index_tenis][j+1])
             print('flux_infotenis:',flux_infotenis)
             flux_tenis0=[1e-29*n for n in flux_tenis if n>0]
             if len(flux_tenis0)>0:
@@ -368,6 +368,7 @@ while i==39:
                 flux_ecdfs.append(ECDFS[1].data[index_ecdfs][j])
                 flux_infoecdfs.append(ECDFS[1].data[index_ecdfs][j])
                 flux_infoecdfs.append(ECDFS[1].data[index_ecdfs][j+1])
+            print('flux_infoecdfs',flux_infoecdfs)
             flux_ecdfs_raw=[1e-29*n for n in flux_ecdfs if n > 0]
             extcor=nummatch(flux_ecdfs,EXTCOR)
             colcor=nummatch(flux_ecdfs,COLCOR)
@@ -408,8 +409,12 @@ while i==39:
             id_mcetg.append(index_galex)
             flux_galex=[]
             flux_galex0=[]
+            flux_infogalex=[]
             for j in range(34,39,4):
                 flux_galex.append(GALEX[1].data[index_galex][j])
+                flux_infogalex.append(GALEX[1].data[index_galex][j])
+                flux_infogalex.append(GALEX[1].data[index_galex][j+1])
+            print('flux_infogalex',flux_infogalex)
             flux_galex0=[1e-29*n for n in flux_galex if n>0]
             if len(flux_galex0)>0:
                 v_galex=nummatch(flux_galex,f_galex)#v_tenis>0
