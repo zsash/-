@@ -68,47 +68,14 @@ def flux2flux(flux):
     f=10**((-73.6/2.5)+math.log10(flux))
     return f
 
+    
+    
+#add herschel data    
+zall=fits.open('/home/ashley/Link_sed/catalog/cdfs.v1.6.9.fits')
+zher=fits.open('/home/ashley/Link_sed/catalog/herschel.fits')
+ra_her=np.ndarray.tolist(zall[1].data.field('ra'))
+dec_her=np.ndarray.tolist(zall[1].data.field('dec'))
 
-f=open('/home/ashley/Link_sed/catalog/fig7_R06SED.dat','r')
-p=f.readlines()
-p0=[]
-for n in range(1,len(p),1):
-    p0.append(p[n])
-lognu=[n.strip().split('    ')[0] for n in p0]
-lognulnnu=[n.strip().split('    ')[1] for n in p0]
-
-#delete the GEMS data===add the radio 
-lamda1main=[658,900,1249,2163,3600,2.14e8]#nm    #v/ir/ir/nir/nir/'/'
-fmain=[3e17/i for i in lamda1main]
-
-#lamda information
-lamda_candels1=[]
-lamda_ecdfs1=[]
-lamda_tenis1=[]
-lamda_galex1=[]
-f1=open('/home/ashley/Link_sed/catalog/eff_lamda2014.2','r')
-p1=f1.readlines()
-for i in range(2,56,1):
-    if i>=20 and i<=48:
-        lamda_ecdfs1.append(p1[i])
-    elif 49<=i<=50:
-        lamda_tenis1.append(p1[i])
-    elif 51<=i<=52:
-        lamda_galex1.append(p1[i])
-lamda_candels1=[]
-f2=open('/home/ashley/Link_sed/catalog/eff_lamda2014.1.1','r')
-p2=f2.readlines()
-for i in range(0,17,1):
-    lamda_candels1.append(p2[i])
-
-lamda_candels=[n.strip().split('\t')[1] for n in lamda_candels1]
-lamda_ecdfs=[n.strip().split('\t')[1] for n in lamda_ecdfs1]
-lamda_tenis=[n.strip().split('\t')[1] for n in lamda_tenis1]
-lamda_galex=[n.strip().split('\t')[1] for n in lamda_galex1]
-f_candels=[lamda2v(n) for n in map(float,lamda_candels)]
-f_ecdfs=[lamda2v(n) for n in map(float,lamda_ecdfs)]
-f_tenis=[lamda2v(n) for n in map(float,lamda_tenis)]
-f_galex=[lamda2v(n) for n in map(float,lamda_galex)]
 
 #catalog read
 main=fits.open('/home/ashley/Link_sed/catalog/maincat.fits')
@@ -130,45 +97,9 @@ dec_tenis=np.ndarray.tolist(TENIS[1].data.field('dec'))
 ra_galex=np.ndarray.tolist(GALEX[1].data.field('alpha_j2000'))
 dec_galex=np.ndarray.tolist(GALEX[1].data.field('delta_j2000'))
 
-
-
-#ECDFS APER Flux ---> total Flux
-#F_TOT = F_APER * (BVR_FLUX_AUTO / F_BVR) * TOTCOR
-#F_corrected=F_TOT * EXTCOR * COLCOR
-TOTCOR=np.ndarray.tolist(ECDFS[1].data.field('TOTCOR'))
-BVR_FLUX_AUTO=np.ndarray.tolist(ECDFS[1].data.field('BVR_FLUX_AUTO'))
-F_BVR=np.ndarray.tolist(ECDFS[1].data.field('F_BVR'))
-
-fluxcor=fits.open('/home/ashley/Link_sed/catalog/flux_correct.fits')
-extcor1=np.ndarray.tolist(fluxcor[1].data.field('EXTCOR'))
-colcor1=np.ndarray.tolist(fluxcor[1].data.field('COLCOR'))
-EXTCOR2=[]
-COLCOR2=[]
-for h in range(1,33,1):
-    EXTCOR2.append(extcor1[h])
-    COLCOR2.append(colcor1[h])
-
-EXTCOR=[float(n) for n in EXTCOR2]
-COLCOR=[float(n) for n in COLCOR2]  
-
+ 
 #judge
 min_dis=0.5*math.pi/(3600*180)#2.42406840554768e-06
-
-n=1
-i=21
-
-#new file contain information
-'''
-hdr=fits.Header()
-hdr['OBSERVER']='Edwin Hubble'
-hdr['comment']="here's some commentary about this FITS file."
-primary_hdu=fits.PrimaryHDU(header=hdr)
-hdul=fits.HDUList([primary_hdu])
-
-hdul.writeto('sed.fits')
-'''
-
-
 
 flux_info=[]
 #delete VLT data
@@ -190,23 +121,21 @@ columns=('id','Z','U_CTIO_WL','U_CTIO','U_CTIO_E',
           'IA574_WL','IA574','IA574_E','IA624_WL','IA624','IA624_E',
           'IA679_WL','IA679','IA679_E','IA709_WL','IA709','IA709_E',
           'IA738_WL','IA738','IA738_E','IA768_WL','IA768','IA768_E',
-          'IA827_WL','IA827','IA827_E') #wl=A flux=jy 
+          'IA827_WL','IA827','IA827_E','24_WL','24','24_E',
+          '100_WL','100','100_E','160_WL','160','160_E') #wl=A flux=jy 
 
     
 wl_candels=[3734,3722,4317,5918,7693,8047,9055,9851,10550,12486,15370,21605,21463,35508,44960,57245,78840]
 wl_tenis=[12481,21338]
 wl_galex=[2278,1543]
 wl_ecdfs=[3706,4253,4631,4843,5059,5256,5760,6227,6778,7070,7356,7676,8243]
+wl_her=[24000,979036.1,1539451.3]######## exact effective lambda
 
+n=1
+i=45
+tip=0
 
-#t=Table(np.zeros((1,107)),names=columns)
-#t.write('sed.fits',format='fits')
-
-
-#old=fits.open(r'sed.fits')
-#new=old
-#update=list(new[1].data)
-while i<1009:
+while i<50:
     
    
     min_y=[]
@@ -246,6 +175,7 @@ while i<1009:
     distance_main_tenis=[]
     distance_main_galex=[]
     distance_main_irac=[]
+    distance_main_her=[]
     for j in range(0,len(ra_candels),1):
         ra_candels_one=ra_candels[j]
         dec_candels_one=dec_candels[j]
@@ -262,33 +192,28 @@ while i<1009:
         ra_galex_one=ra_galex[j]
         dec_galex_one=dec_galex[j]
         distance_main_galex.append(dis(ra_main_one,dec_main_one,ra_galex_one,dec_galex_one))
+    for j in range(0,len(ra_her),1):
+        ra_her_one=ra_her[j]
+        dec_her_one=dec_her[j]
+        distance_main_her.append(dis(ra_main_one,dec_main_one,ra_her_one,dec_her_one))
+        
 
     dis_candels=np.min(distance_main_candels)
     dis_ecdfs=np.min(distance_main_ecdfs)
     dis_tenis=np.min(distance_main_tenis)
     index_dis_tenis=distance_main_tenis.index(dis_tenis)
     dis_galex=np.min(distance_main_galex)
+    dis_her=np.min(distance_main_her)
     
-    id_mcetg=[i] # i is id
+    
 
-    if main[1].data[i-1][50]>0:#redshift final
+    if main[1].data[i-1][50]>0 and dis_her <= min_dis:#redshift final
         
         flux_data.append(int(i))
         z_final=main[1].data[i-1][50]
         D=red2dis(z_final)
         flux_data.append(z_final)
-        '''
-        if main[1].data[i-1][40]>0:
-            flux_data.append(3*10**10/14)
-            flux_main=10**((main[1].data[i-1][22]-8.9)/(-2.5))
-            flux_data.append(flux_main)
-            flux_data.append(0)    #without error info
-        else:
-            flux_data.append(3*10**10/14)
-            flux_data.append(-9999)
-            flux_data.append(0)
-        #print(flux_data,len(flux_data))   
-        '''
+
         
         if dis_candels <= min_dis:
             index_candels=distance_main_candels.index(dis_candels)
@@ -309,11 +234,7 @@ while i<1009:
                 flux_data.append(wl_candels[j])
                 flux_data.append(-9999)
                 flux_data.append(-9999)
-        #print(flux_data,len(flux_data))         
-              
-            
-            
-            
+         
             
         if dis_tenis <= min_dis:
             index_tenis=distance_main_tenis.index(dis_tenis)
@@ -334,7 +255,7 @@ while i<1009:
                 flux_data.append(-9999)
                 flux_data.append(-9999)
         
-        #print(flux_data,len(flux_data))  
+   
 
         if dis_ecdfs <= min_dis:
             index_ecdfs=distance_main_ecdfs.index(dis_ecdfs)
@@ -418,7 +339,7 @@ while i<1009:
                 flux_data.append(-9999)
                 
                 
-        #print(flux_data,len(flux_data))          
+        
                 
         if dis_galex <= min_dis:
             index_galex=distance_main_galex.index(dis_galex)
@@ -438,29 +359,50 @@ while i<1009:
                 flux_data.append(wl_galex[j])
                 flux_data.append(-9999)
                 flux_data.append(-9999)
+                
+                
+        if dis_her <= min_dis:
+            index_her=distance_main_her.index(dis_her)
+            m=0
+            for j in range(2,7,2):
+                if zher[1].data[index_her][j]>0:
+                    flux_data.append(wl_her[m])
+                    flux_data.append(zher[1].data[index_her][j]*10**(-6))
+                    flux_data.append(zher[1].data[index_her][j+1]*10**(-6))
+                else:
+                    flux_data.append(wl_her[m])
+                    flux_data.append(-9999)
+                    flux_data.append(-9999)
+                m=m+1
+        else:
+            for j in range(0,3,1):
+                flux_data.append(wl_her[j])
+                flux_data.append(-9999)
+                flux_data.append(-9999)
         
-        #print(flux_data,len(flux_data))  
-        if i==21:
+
+        if tip==0:
             update=[flux_data]
         else:
             update.append(flux_data)
             
         print(i,len(flux_data))
-        
-        
-        
+
+        tip=tip+1
         i=i+1
     else:
         i=i+1
+      
 update=np.array(update)
 t=Table(update,names=columns)
-t.write('new21_1009.txt',format='ascii')
+t.write('/home/ashley/Link_sed/AGNfitter-master/data/all_4549.txt',format='ascii')
 main.close()
 CANDELS.close()
 ECDFS.close()
 TENIS.close()
 GALEX.close()
-f.close()
+zall.close()
+zher.close()
 
 
 
