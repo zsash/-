@@ -103,7 +103,8 @@ min_dis=0.5*math.pi/(3600*180)#2.42406840554768e-06
 
 flux_info=[]
 #delete VLT data
-columns=('id','Z','U_CTIO_WL','U_CTIO','U_CTIO_E',
+columns=('id','Z','24_WL','24','24_E','100_WL','100','100_E','160_WL','160','160_E',
+         'U_CTIO_WL','U_CTIO','U_CTIO_E',
           'U_VIMOS_WL','U_VIMOS','U_VIMOS_E','F435W_WL','F435W','F435W_E',
           'F606W_WL','F606W','F606W_E',
           'F775W_WL','F775W','F775W_E','F814W_WL','F814W','F814W_E',
@@ -113,29 +114,32 @@ columns=('id','Z','U_CTIO_WL','U_CTIO','U_CTIO_E',
           'Ks_ISAAC_WL','Ks_ISAAC','Ks_ISAAC_E','Ks_HAWKI_WL','Ks_HAWKI','Ks_HAWKI_E',
           '3.6_WL','3.6','3.6_E','4.5_WL','4.5','4.5_E',
           '5.8_WL','5.8','5.8_E','8.0_WL','8.0','8.0_E',
-          'U38_WL','U38','U38_E','J_WL','J','J_E',
-          'Ks_WL','Ks','Ks_E','FUV_WL','FUV','FUV_E',
-          'NUV_WL','NUV','NUV_E','IA427_WL','IA427','IA427_E',
+          'J_WL','J','J_E',
+          'Ks_WL','Ks','Ks_E','NUV_WL','NUV','NUV_E',
+          'FUV_WL','FUV','FUV_E',
+          'U38_WL','U38','U38_E',
+          'IA427_WL','IA427','IA427_E',
           'IA464_WL','IA_464','IA464_E','IA484_WL','IA484','IA484_E',
           'IA505_WL','IA505','IA505_E','IA527_WL','IA527','IA527_E',
           'IA574_WL','IA574','IA574_E','IA624_WL','IA624','IA624_E',
           'IA679_WL','IA679','IA679_E','IA709_WL','IA709','IA709_E',
           'IA738_WL','IA738','IA738_E','IA768_WL','IA768','IA768_E',
-          'IA827_WL','IA827','IA827_E','24_WL','24','24_E',
-          '100_WL','100','100_E','160_WL','160','160_E') #wl=A flux=jy 
-
+          'IA827_WL','IA827','IA827_E') #wl=A flux=jy 
+#,
+          #
     
 wl_candels=[3734,3722,4317,5918,7693,8047,9055,9851,10550,12486,15370,21605,21463,35508,44960,57245,78840]
 wl_tenis=[12481,21338]
 wl_galex=[2278,1543]
 wl_ecdfs=[3706,4253,4631,4843,5059,5256,5760,6227,6778,7070,7356,7676,8243]
-wl_her=[24000,979036.1,1539451.3]######## exact effective lambda
+wl_her=[240000,979036.1,1539451.3]######## exact effective lambda
 
 n=1
 i=45
 tip=0
+count=0
 
-while i<50:
+while i<1009:
     
    
     min_y=[]
@@ -207,13 +211,35 @@ while i<50:
     
     
 
-    if main[1].data[i-1][50]>0 and dis_her <= min_dis:#redshift final
+    if main[1].data[i-1][50]>0 and dis_her<=min_dis:#and dis_her <= min_dis:#redshift final
         
         flux_data.append(int(i))
         z_final=main[1].data[i-1][50]
         D=red2dis(z_final)
         flux_data.append(z_final)
 
+        if dis_her <= min_dis:
+            index_her=distance_main_her.index(dis_her)
+            m=0
+            #if  zher[1].data[index_her][2]>0 and zher[1].data[index_her][4]>0 and zher[1].data[index_her][6]>0:
+             #   count=count+1
+             #   print('i',i)
+            
+            for j in range(2,7,2):
+                if zher[1].data[index_her][j]>0:
+                    flux_data.append(wl_her[m])
+                    flux_data.append(zher[1].data[index_her][j]*10**(-3))
+                    flux_data.append(zher[1].data[index_her][j+1]*10**(-3))
+                else:
+                    flux_data.append(wl_her[m])
+                    flux_data.append(-9999)
+                    flux_data.append(-9999)
+                m=m+1
+        else:
+            for j in range(0,3,1):
+                flux_data.append(wl_her[j])
+                flux_data.append(-9999)
+                flux_data.append(-9999)
         
         if dis_candels <= min_dis:
             index_candels=distance_main_candels.index(dis_candels)
@@ -255,7 +281,24 @@ while i<50:
                 flux_data.append(-9999)
                 flux_data.append(-9999)
         
-   
+        if dis_galex <= min_dis:
+            index_galex=distance_main_galex.index(dis_galex)
+            m=0
+            for j in range(34,37,2):
+                if GALEX[1].data[index_galex][j]>0:
+                    flux_data.append(wl_galex[m])
+                    flux_data.append(GALEX[1].data[index_galex][j]*(10**(-6)))
+                    flux_data.append(GALEX[1].data[index_galex][j+1]*(10**(-6)))
+                else:
+                    flux_data.append(wl_galex[m])
+                    flux_data.append(-9999)
+                    flux_data.append(-9999)
+                m=m+1
+        else:
+            for j in range(0,2,1):
+                flux_data.append(wl_galex[j])
+                flux_data.append(-9999)
+                flux_data.append(-9999)
 
         if dis_ecdfs <= min_dis:
             index_ecdfs=distance_main_ecdfs.index(dis_ecdfs)
@@ -292,19 +335,19 @@ while i<50:
                     flux_data.append(-9999)
                 m=m+1    
             if ECDFS[1].data[index_ecdfs][48]>0:
-                flux_data.append(wl_ecdfs[5])
+                flux_data.append(wl_ecdfs[6])
                 flux_data.append(ECDFS[1].data[index_ecdfs][48]*(10**(-6))*bvr_flux_auto*totcor*1.024*0.952/f_bvr)
                 flux_data.append(ECDFS[1].data[index_ecdfs][49]*(10**(-6)))
             else:
-                flux_data.append(wl_ecdfs[5])
+                flux_data.append(wl_ecdfs[6])
                 flux_data.append(-9999)
                 flux_data.append(-9999)  
             if ECDFS[1].data[index_ecdfs][52]>0:
-                flux_data.append(wl_ecdfs[6])
+                flux_data.append(wl_ecdfs[7])
                 flux_data.append(ECDFS[1].data[index_ecdfs][52]*(10**(-6))*bvr_flux_auto*totcor*1.021*0.898/f_bvr)
                 flux_data.append(ECDFS[1].data[index_ecdfs][53]*(10**(-6)))
             else:
-                flux_data.append(wl_ecdfs[6]/(10**4))
+                flux_data.append(wl_ecdfs[7]/(10**4))
                 flux_data.append(-9999)
                 flux_data.append(-9999) 
             
@@ -315,21 +358,21 @@ while i<50:
             for j in range(56,63,2):
                 
                 if ECDFS[1].data[index_ecdfs][j]>0:
-                    flux_data.append(wl_ecdfs[m+6])
+                    flux_data.append(wl_ecdfs[m+8])
                     flux_data.append(ECDFS[1].data[index_ecdfs][j]*(10**(-6))*bvr_flux_auto*totcor*correct2[m]/f_bvr)
                     flux_data.append(ECDFS[1].data[index_ecdfs][j+1]*(10**(-6)))
                 else:
-                    flux_data.append(wl_ecdfs[m+6])
+                    flux_data.append(wl_ecdfs[m+8])
                     flux_data.append(-9999)
                     flux_data.append(-9999)
                 m=m+1
                 
             if ECDFS[1].data[index_ecdfs][66]>0:
-                flux_data.append(wl_ecdfs[11])
+                flux_data.append(wl_ecdfs[12])
                 flux_data.append(ECDFS[1].data[index_ecdfs][66]*(10**(-6))*bvr_flux_auto*totcor*1.015*1.103/f_bvr)
                 flux_data.append(ECDFS[1].data[index_ecdfs][66]*(10**(-6)))
             else:
-                flux_data.append(wl_ecdfs[11])
+                flux_data.append(wl_ecdfs[12])
                 flux_data.append(-9999)
                 flux_data.append(-9999)   
         else:
@@ -338,64 +381,24 @@ while i<50:
                 flux_data.append(-9999)
                 flux_data.append(-9999)
                 
-                
-        
-                
-        if dis_galex <= min_dis:
-            index_galex=distance_main_galex.index(dis_galex)
-            m=0
-            for j in range(34,37,2):
-                if GALEX[1].data[index_galex][j]>0:
-                    flux_data.append(wl_galex[m])
-                    flux_data.append(GALEX[1].data[index_galex][j]*(10**(-6)))
-                    flux_data.append(GALEX[1].data[index_galex][j+1]*(10**(-6)))
-                else:
-                    flux_data.append(wl_galex[m])
-                    flux_data.append(-9999)
-                    flux_data.append(-9999)
-                m=m+1
-        else:
-            for j in range(0,2,1):
-                flux_data.append(wl_galex[j])
-                flux_data.append(-9999)
-                flux_data.append(-9999)
-                
-                
-        if dis_her <= min_dis:
-            index_her=distance_main_her.index(dis_her)
-            m=0
-            for j in range(2,7,2):
-                if zher[1].data[index_her][j]>0:
-                    flux_data.append(wl_her[m])
-                    flux_data.append(zher[1].data[index_her][j]*10**(-6))
-                    flux_data.append(zher[1].data[index_her][j+1]*10**(-6))
-                else:
-                    flux_data.append(wl_her[m])
-                    flux_data.append(-9999)
-                    flux_data.append(-9999)
-                m=m+1
-        else:
-            for j in range(0,3,1):
-                flux_data.append(wl_her[j])
-                flux_data.append(-9999)
-                flux_data.append(-9999)
-        
 
         if tip==0:
             update=[flux_data]
         else:
             update.append(flux_data)
             
-        print(i,len(flux_data))
+        #print(i,len(flux_data))
 
         tip=tip+1
         i=i+1
     else:
         i=i+1
-      
+    
 update=np.array(update)
 t=Table(update,names=columns)
-t.write('/home/ashley/Link_sed/AGNfitter-master/data/all_4549.txt',format='ascii')
+t.write('/home/ashley/Link_sed/AGNfitter-master/data/all_451009.txt',format='ascii')
+
+t.write('/home/ashley/Link_sed/AGNfitter-master/data/all_451009.fits',format='fits')
 main.close()
 CANDELS.close()
 ECDFS.close()
@@ -403,7 +406,7 @@ TENIS.close()
 GALEX.close()
 zall.close()
 zher.close()
-
+#print('len(count)',count)  
 
 
 
